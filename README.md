@@ -3,7 +3,7 @@
 **Henry Data Analytics - Proyecto Final**
 
 ## 🎯 Objetivo
-Determinar si las pruebas físicas del Combine predicen el rendimiento profesional mediante un pipeline de datos (SQLite -> Python -> Azure SQL).
+Determinar si las pruebas físicas del Combine predicen el rendimiento profesional mediante un pipeline de datos (SQLite -> Python -> SQL).
 
 ## 🛠️ Tecnologías
 - **Extracción:** Python (SQLite3, Pandas).
