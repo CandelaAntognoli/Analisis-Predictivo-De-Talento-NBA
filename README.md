@@ -33,6 +33,10 @@ Creación de un Data Warehouse en SQL Server.
 
 Preparación de datos listos para análisis y visualización.
 
+#  Diagrama estructura de datos
+
+<img width="1536" height="1024" alt="Arquitectura NBA" src="https://github.com/user-attachments/assets/c2a12fba-9b12-4991-aa1d-de87b44d9e87" />
+
 
 #  📊 Datos utilizados
 
