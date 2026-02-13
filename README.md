@@ -160,6 +160,7 @@ Resuelve la relación muchos-a-muchos entre jugadores y equipos.
 
 Mantiene la integridad histórica (from_year / to_year).
 
+![Diagrama Entidad Relacion drawio (2)_page-0001](https://github.com/user-attachments/assets/831598ae-1d4d-4635-af84-ac1f3f5c1045)
 
 # 🗄️ Data Warehouse en SQL Server
 
@@ -196,7 +197,6 @@ GitHub: control de versiones y documentación
 <img width="1024" height="1024" alt="tecnologias" src="https://github.com/user-attachments/assets/adbcc56f-0848-4d44-8114-348be2dc7dda" />
 
 
-# Visualizaciones 
 
 
 # 📌 Conclusión
