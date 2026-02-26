@@ -208,6 +208,157 @@ GitHub: control de versiones y documentación
 El Sprint #1 estableció una base sólida de ingeniería de datos, asegurando que cualquier análisis posterior se realice sobre datos confiables, interpretables y bien modelados.
 La arquitectura diseñada permite escalar el proyecto hacia análisis avanzados y soporta decisiones reales de scouting deportivo basadas en datos.
 
+# SPRINT #2
+
+# 1️⃣ Contexto General del Proyecto (Sprint 1)
+
+El proyecto tiene como objetivo analizar si las aptitudes físicas medidas en el NBA Draft Combine pueden anticipar el rendimiento profesional posterior de los jugadores.
+
+Durante el Sprint 1 se trabajó en la base estructural del proyecto:
+
+Limpieza y normalización de datos en Python.
+
+Estandarización de tipos de datos.
+
+Conversión de unidades (altura, peso).
+
+Eliminación de inconsistencias y registros incompletos.
+
+Diseño del modelo relacional en esquema estrella.
+
+Creación de la base de datos en SQL Server (NBA_DW).
+
+Implementación de dos tablas de hechos:
+
+FACT_COMBINE (métricas físicas)
+
+FACT_GAME (rendimiento profesional)
+
+Construcción de dimensiones:
+
+DIM_PLAYER
+
+DIM_TEAM
+
+DIM_DATE
+
+El objetivo fue separar claramente métricas físicas pre-NBA de métricas de desempeño profesional, permitiendo análisis comparativos estructurados.
+
+# 2️⃣ Construcción del Dataset Analítico 
+
+En el segundo sprint se trabajó en Google Colab directamente sobre el archivo nba.sqlite.
+
+Se integraron las siguientes tablas:
+
+draft_combine_stats
+
+common_player_info
+
+game
+
+team
+
+Se realizaron:
+
+Conversión de altura a centímetros.
+
+Conversión de peso a kilogramos.
+
+Unificación de claves.
+
+Limpieza de tipos numéricos.
+
+Eliminación de inconsistencias estructurales.
+
+Se construyó un dataset agregado a nivel equipo histórico, promediando:
+
+Variables físicas promedio:
+
+Envergadura
+
+Salto vertical
+
+Agilidad
+
+Altura
+
+Peso
+
+Variables de rendimiento promedio:
+
+Puntos
+
+Tapones
+
+Robos
+
+Plus/Minus
+
+El dataset final quedó compuesto por:
+
+30 equipos × 10 métricas agregadas
+
+# 3️⃣ Análisis Exploratorio de Datos (EDA)
+
+Se aplicaron:
+
+Estadística descriptiva
+
+Matriz de correlación de Pearson
+
+Heatmaps
+
+Gráficos de dispersión con regresión
+
+Análisis individual por posición
+
+# 4️⃣ Insights Principales 
+🔹 1. Coherencia Física Interna
+
+Las variables físicas (altura, peso, envergadura) presentan fuerte correlación entre sí, validando consistencia estructural del dataset.
+
+🔹 2. Bajo Impacto del Físico Promedio en el Rendimiento Colectivo
+
+No se encontraron correlaciones significativas entre el perfil físico promedio del equipo y su desempeño competitivo (puntos, tapones, diferencial). El físico agregado pierde poder explicativo.
+
+🔹 3. El Rendimiento Depende Más del Juego que del Tamaño
+
+Las métricas de rendimiento están más correlacionadas entre sí (puntos ↔ plus/minus ↔ robos) que con variables físicas.
+
+🔹 4. Diferencias Físicas Claras por Posición
+
+A nivel individual se observan patrones coherentes:
+
+Centers más altos y pesados.
+
+Guards más explosivos.
+
+Relación fuerte entre altura y envergadura.
+
+Relación positiva entre peso y fuerza.
+
+No existe relación clara entre altura y salto vertical.
+
+🔹 5. El Talento Físico No Garantiza Impacto Competitivo
+
+Incluso un índice físico agregado mostró correlación prácticamente nula con el plus/minus promedio del equipo.
+
+# 5️⃣  Conclusión General del Sprint #2
+
+El análisis sugiere que:
+
+Las métricas físicas individuales son coherentes y estructuralmente válidas, pero no emergen como predictores determinantes del éxito colectivo cuando se analizan a nivel equipo agregado.
+
+El rendimiento competitivo parece depender más de:
+
+Producción ofensiva
+
+Dinámica táctica
+
+Eficiencia de juego
+
+Interacción colectiva
+
 ## 👥 Equipo
 - Candela Paula Antognoli - Data Analyst
 - Faber Garcia - Data Analyst
