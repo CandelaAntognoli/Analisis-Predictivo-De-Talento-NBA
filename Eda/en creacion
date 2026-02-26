@@ -1,1 +1,415 @@
+import pandas as pd
+import numpy as np
+import os, sqlite3
+pd.set_option("display.max_columns", None)
+pd.set_option("display.max_rows", 50)
+
+from google.colab import drive
+drive.mount("/content/drive")
+
+# clonamos repositorio de github
+REPO_URL = "https://github.com/CandelaAntognoli/Analisis-Predictivo-De-Talento-NBA.git"
+REPO_NAME = "Analisis-Predictivo-De-Talento-NBA"
+REPO_PATH = f"/content/{REPO_NAME}"
+
+if not os.path.exists(REPO_PATH):
+    !git clone {REPO_URL}
+else:
+    print("✅ Repo ya clonado:", REPO_PATH)
+
+print("📁 Repo root:", os.listdir(REPO_PATH))
+
+import os, zipfile, sqlite3, pandas as pd
+
+BASE = "/content/drive"
+
+def find_all(target_names, base=BASE):
+    hits = []
+    for root, dirs, files in os.walk(base):
+        for fn in files:
+            if fn in target_names:
+                path = os.path.join(root, fn)
+                size = os.path.getsize(path)
+                hits.append((path, size))
+    return sorted(hits, key=lambda x: x[1], reverse=True)
+
+# 1) Montar Drive (si ya lo montaste, no pasa nada)
+from google.colab import drive
+drive.mount("/content/drive")
+
+# 2) Buscar TODOS los posibles archivos
+targets = ["nba.sqlite", "nba.sqlite.zip"]
+hits = find_all(targets)
+
+if not hits:
+    raise FileNotFoundError("❌ No encontré nba.sqlite ni nba.sqlite.zip en Drive.")
+
+print("🔎 Archivos encontrados (ordenados por tamaño):")
+for p, s in hits[:20]:
+    print(f"- {p}  |  {round(s/(1024*1024), 2)} MB")
+
+# 3) Elegir el archivo REAL (más grande)
+best_path, best_size = hits[0]
+print("\n✅ Elegido:", best_path, "|", round(best_size/(1024*1024), 2), "MB")
+
+if best_size == 0:
+    raise FileNotFoundError(
+        "❌ El archivo más grande encontrado pesa 0 MB. "
+        "Eso significa que el zip/sqlite REAL no está en Drive o no terminó de subirse."
+    )
+
+# 4) Si es zip -> extraer sqlite
+UNZIP_DIR = "/content/nba_unzipped"
+os.makedirs(UNZIP_DIR, exist_ok=True)
+
+DB_PATH = None
+
+if best_path.lower().endswith(".zip"):
+    with zipfile.ZipFile(best_path, "r") as z:
+        members = z.namelist()
+        sqlite_members = [m for m in members if m.lower().endswith(".sqlite")]
+        if not sqlite_members:
+            raise FileNotFoundError("❌ El zip no contiene ningún .sqlite.")
+        target_member = sqlite_members[0]
+        z.extract(target_member, UNZIP_DIR)
+        DB_PATH = os.path.join(UNZIP_DIR, target_member)
+else:
+    # Es sqlite directo -> copiar a /content para estabilidad
+    DB_PATH = "/content/nba.sqlite"
+    os.system(f'cp "{best_path}" "{DB_PATH}"')
+
+# 5) Validar SQLite
+print("\n📍 DB_PATH:", DB_PATH)
+print("Existe?:", os.path.exists(DB_PATH))
+print("Tamaño DB (MB):", round(os.path.getsize(DB_PATH)/(1024*1024), 2))
+
+with open(DB_PATH, "rb") as f:
+    header = f.read(16)
+print("Header:", header)
+if b"SQLite format 3" not in header:
+    raise ValueError("❌ El archivo no parece ser una base SQLite válida (header incorrecto).")
+
+# 6) Conectar y listar tablas
+conn = sqlite3.connect(DB_PATH)
+tables = pd.read_sql("SELECT name FROM sqlite_master WHERE type='table';", conn)
+print("\n✅ Tablas encontradas:", len(tables))
+display(tables)
+
+pd.read_sql("PRAGMA table_info(draft_combine_stats);", conn)
+
+pd.read_sql("PRAGMA table_info(common_player_info);", conn)
+
+pd.read_sql("PRAGMA table_info(game);", conn)
+
+pd.read_sql("PRAGMA table_info(player);", conn)
+
+pd.read_sql("SELECT * FROM player LIMIT 5;", conn)
+
+# unimos las tablas importantes para realizar las mediciones de los resultados por equipo
+import pandas as pd
+
+# Combine
+df_combine = pd.read_sql("""
+SELECT
+    player_id,
+    season,
+    wingspan,
+    max_vertical_leap,
+    lane_agility_time,
+    three_quarter_sprint,
+    bench_press
+FROM draft_combine_stats
+""", conn)
+
+# Info jugador
+df_players = pd.read_sql("""
+SELECT
+    person_id,
+    display_first_last,
+    team_id,
+    from_year,
+    height,
+    weight,
+    position
+FROM common_player_info
+WHERE team_id IS NOT NULL
+""", conn)
+
+# Alinear nombres de ID
+df_combine.rename(columns={"player_id": "person_id"}, inplace=True)
+
+# Merge físico + equipo
+df_physical = df_combine.merge(df_players, on="person_id", how="inner")
+
+df_physical.head()
+
+# limpieza basica de peso y altura
+def height_to_cm(h):
+    try:
+        feet, inches = h.split("-")
+        return (int(feet) * 30.48) + (int(inches) * 2.54)
+    except:
+        return None
+
+df_physical["height_cm"] = df_physical["height"].apply(height_to_cm)
+df_physical["weight_kg"] = pd.to_numeric(df_physical["weight"], errors="coerce") * 0.453592
+
+# sacamos promedio fisico por equipo
+df_team_physical = df_physical.groupby("team_id").agg({
+    "wingspan": "mean",
+    "max_vertical_leap": "mean",
+    "lane_agility_time": "mean",
+    "height_cm": "mean",
+    "weight_kg": "mean"
+}).reset_index()
+
+df_team_physical.rename(columns={
+    "wingspan": "avg_wingspan",
+    "max_vertical_leap": "avg_vertical",
+    "lane_agility_time": "avg_agility",
+    "height_cm": "avg_height_cm",
+    "weight_kg": "avg_weight_kg"
+}, inplace=True)
+
+df_team_physical.head()
+
+# sacamos metricas de rendimiento por equipo
+# primero normalizamos home/away
+
+df_game = pd.read_sql("""
+SELECT
+    season_id,
+    team_id_home,
+    pts_home,
+    blk_home,
+    stl_home,
+    plus_minus_home,
+    team_id_away,
+    pts_away,
+    blk_away,
+    stl_away,
+    plus_minus_away
+FROM game
+WHERE season_type = 'Regular Season'
+""", conn)
+
+# Home
+home = df_game[["season_id","team_id_home","pts_home","blk_home","stl_home","plus_minus_home"]]
+home.columns = ["season","team_id","pts","blk","stl","plus_minus"]
+
+# Away
+away = df_game[["season_id","team_id_away","pts_away","blk_away","stl_away","plus_minus_away"]]
+away.columns = ["season","team_id","pts","blk","stl","plus_minus"]
+
+df_long = pd.concat([home, away])
+
+# agrupamos
+df_team_performance = df_long.groupby("team_id").agg({
+    "pts": "mean",
+    "blk": "mean",
+    "stl": "mean",
+    "plus_minus": "mean"
+}).reset_index()
+
+df_team_performance.rename(columns={
+    "pts": "avg_pts",
+    "blk": "avg_blk",
+    "stl": "avg_stl",
+    "plus_minus": "avg_plus_minus"
+}, inplace=True)
+
+df_team_performance.head()
+
+# Normalizar team_id en ambos DF para que coincidan
+
+df_team_physical["team_id"] = pd.to_numeric(df_team_physical["team_id"], errors="coerce")
+df_team_performance["team_id"] = pd.to_numeric(df_team_performance["team_id"], errors="coerce")
+
+# Eliminar nulos que salieron de conversiones fallidas
+df_team_physical = df_team_physical.dropna(subset=["team_id"]).copy()
+df_team_performance = df_team_performance.dropna(subset=["team_id"]).copy()
+
+# Pasar a int64
+df_team_physical["team_id"] = df_team_physical["team_id"].astype("int64")
+df_team_performance["team_id"] = df_team_performance["team_id"].astype("int64")
+
+print(df_team_physical["team_id"].dtype, df_team_performance["team_id"].dtype)
+print("Teams físicos:", df_team_physical["team_id"].nunique())
+print("Teams performance:", df_team_performance["team_id"].nunique())
+
+df_analytic = df_team_physical.merge(df_team_performance, on="team_id", how="inner")
+print("✅ Dataset final:", df_analytic.shape)
+df_analytic.head()
+
+# Nulos, tipo y resumenes
+df_analytic.info()
+df_analytic.isna().sum()
+df_analytic.describe()
+
+# Detectamos outliers
+num_cols = [c for c in df_analytic.columns if c != "team_id"]
+q1 = df_analytic[num_cols].quantile(0.25)
+q3 = df_analytic[num_cols].quantile(0.75)
+iqr = q3 - q1
+outliers = ((df_analytic[num_cols] < (q1 - 1.5*iqr)) | (df_analytic[num_cols] > (q3 + 1.5*iqr))).sum()
+outliers.sort_values(ascending=False)
+
+# Ranking de equipos por rendimiento
+df_analytic.sort_values("avg_plus_minus", ascending=False).head(10)[
+    ["team_id","avg_plus_minus","avg_pts","avg_blk","avg_stl"]
+]
+
+df_analytic.sort_values("avg_plus_minus", ascending=True).head(10)[
+    ["team_id","avg_plus_minus","avg_pts","avg_blk","avg_stl"]
+]
+
+# Matriz de correlacion
+corr = df_analytic.drop(columns=["team_id"]).corr(method="pearson")
+corr
+
+# HeatMap (para visualizar patrones rapidamente)
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(10,8))
+sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm", square=True)
+plt.title("Correlación (Pearson): Promedios físicos vs rendimiento de equipo")
+plt.show()
+
+# envergadura vs tapones
+plt.figure(figsize=(7,5))
+sns.regplot(data=df_analytic, x="avg_wingspan", y="avg_blk")
+plt.title("Avg Wingspan vs Avg Blocks (equipo)")
+plt.show()
+
+# agilidad vs robos
+plt.figure(figsize=(7,5))
+sns.regplot(data=df_analytic, x="avg_agility", y="avg_stl")
+plt.title("Avg Lane Agility Time vs Avg Steals (equipo)")
+plt.show()
+
+# Explosividad vs impacto
+plt.figure(figsize=(7,5))
+sns.regplot(data=df_analytic, x="avg_vertical", y="avg_plus_minus")
+plt.title("Avg Vertical Leap vs Avg Plus-Minus (equipo)")
+plt.show()
+
+# Altura vs puntos
+plt.figure(figsize=(7,5))
+sns.regplot(data=df_analytic, x="avg_height_cm", y="avg_pts")
+plt.title("Avg Height vs Avg Points (equipo)")
+plt.show()
+
+# armamos un " perfil fisico promedio por equipo"
+from scipy.stats import zscore
+
+df_index = df_analytic.copy()
+
+# Variables físicas (agility se invierte porque menor es mejor)
+df_index["agility_inv"] = -df_index["avg_agility"]
+
+phys_cols = ["avg_wingspan","avg_vertical","agility_inv","avg_height_cm","avg_weight_kg"]
+for c in phys_cols:
+    df_index[c+"_z"] = zscore(df_index[c])
+
+df_index["physical_index"] = df_index[[c+"_z" for c in phys_cols]].mean(axis=1)
+
+df_index.sort_values("physical_index", ascending=False).head(10)[
+    ["team_id","physical_index","avg_plus_minus","avg_blk","avg_stl"]
+]
+
+plt.figure(figsize=(7,5))
+sns.regplot(data=df_index, x="physical_index", y="avg_plus_minus")
+plt.title("Physical Index vs Plus-Minus (equipo)")
+plt.show()
+
+import matplotlib.pyplot as plt
+
+plt.figure()
+
+plt.scatter(df_analytic['avg_height_cm'],
+            df_analytic['avg_vertical'])
+
+plt.xlabel('Height (cm)')
+plt.ylabel('Vertical Jump')
+plt.title('Height vs Vertical Jump')
+
+plt.show()
+
+plt.figure(figsize=(8,6))
+
+sns.scatterplot(
+    data=df_index,
+    x="physical_index",
+    y="avg_plus_minus",
+    size="avg_blk",
+    alpha=0.7
+)
+
+plt.axvline(df_index["physical_index"].mean(), linestyle="--")
+plt.axhline(df_index["avg_plus_minus"].mean(), linestyle="--")
+
+plt.title("Perfil Físico vs Impacto Competitivo")
+plt.xlabel("Physical Index")
+plt.ylabel("Average Plus Minus")
+
+plt.show()
+
+plt.figure(figsize=(8,6))
+
+sns.boxplot(data=df_physical,
+            x="position",
+            y="height_cm")
+
+plt.title("Distribución de Altura por Posición")
+plt.show()
+
+plt.figure(figsize=(8,6))
+
+sns.stripplot(
+    data=df_physical,
+    x="position",
+    y="max_vertical_leap",
+    jitter=True,
+    alpha=0.6
+)
+
+plt.title("Explosividad Individual por Posición")
+plt.show()
+
+plt.figure(figsize=(7,6))
+
+sns.scatterplot(
+    data=df_physical,
+    x="height_cm",
+    y="wingspan",
+    hue="position"
+)
+
+plt.title("Altura vs Envergadura")
+plt.show()
+
+plt.figure(figsize=(7,6))
+
+sns.scatterplot(
+    data=df_physical,
+    x="three_quarter_sprint",
+    y="lane_agility_time",
+    hue="position"
+)
+
+plt.title("Velocidad vs Agilidad")
+plt.show()
+
+plt.figure(figsize=(7,6))
+
+sns.regplot(
+    data=df_physical,
+    x="weight_kg",
+    y="bench_press"
+)
+
+plt.title("Peso vs Fuerza (Bench Press)")
+plt.show()
+
 
