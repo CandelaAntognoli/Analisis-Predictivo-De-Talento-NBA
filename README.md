@@ -203,131 +203,153 @@ GitHub: control de versiones y documentación
 
 
 
-# 📌 Conclusión
+# 📌 Resumen
 
 El Sprint #1 estableció una base sólida de ingeniería de datos, asegurando que cualquier análisis posterior se realice sobre datos confiables, interpretables y bien modelados.
 La arquitectura diseñada permite escalar el proyecto hacia análisis avanzados y soporta decisiones reales de scouting deportivo basadas en datos.
 
-# SPRINT #2
+# 📊 Sprint #2 – Análisis Exploratorio (EDA)
+Relación entre Perfil Físico y Rendimiento Competitivo en NBA
 
-# 1️⃣ Contexto General del Proyecto (Sprint 1)
+# 1️⃣ Objetivo del Análisis
 
-El proyecto tiene como objetivo analizar si las aptitudes físicas medidas en el NBA Draft Combine pueden anticipar el rendimiento profesional posterior de los jugadores.
+El propósito del Sprint #2 fue explorar si las métricas físicas obtenidas en el Draft Combine guardan relación con el rendimiento profesional posterior.
 
-Durante el Sprint 1 se trabajó en la base estructural del proyecto:
+La pregunta central fue:
 
-Limpieza y normalización de datos en Python.
+¿El perfil físico promedio de un equipo influye en su desempeño competitivo?
 
-Estandarización de tipos de datos.
+Para responderla, construimos un dataset agregado por equipo que combinó métricas físicas promedio del roster con métricas de rendimiento promedio.
 
-Conversión de unidades (altura, peso).
+# 2️⃣ Métricas Analizadas
+🔹 Variables físicas promedio por equipo:
 
-Eliminación de inconsistencias y registros incompletos.
+Envergadura (Wingspan)
 
-Diseño del modelo relacional en esquema estrella.
+Salto vertical máximo
 
-Creación de la base de datos en SQL Server (NBA_DW).
+Tiempo de agilidad (Lane Agility)
 
-Implementación de dos tablas de hechos:
+Altura promedio
 
-FACT_COMBINE (métricas físicas)
+Peso promedio
 
-FACT_GAME (rendimiento profesional)
+Estas métricas representan dimensiones estructurales (tamaño), potencia (explosividad) y movilidad (velocidad lateral).
 
-Construcción de dimensiones:
+🔹 Variables de rendimiento:
 
-DIM_PLAYER
+Puntos promedio
 
-DIM_TEAM
+Tapones promedio
 
-DIM_DATE
+Robos promedio
 
-El objetivo fue separar claramente métricas físicas pre-NBA de métricas de desempeño profesional, permitiendo análisis comparativos estructurados.
+Plus/Minus promedio
 
-# 2️⃣ Construcción del Dataset Analítico 
+Estas métricas representan impacto ofensivo, impacto defensivo y diferencial competitivo.
 
-En el segundo sprint se trabajó en Google Colab directamente sobre el archivo nba.sqlite.
+# 3️⃣ Comparaciones Realizadas y Justificación
 
-Se integraron las siguientes tablas:
+Se realizaron comparaciones específicas con una lógica conceptual:
 
-draft_combine_stats
+📌 Envergadura vs Tapones
 
-common_player_info
+Hipótesis: mayor alcance debería facilitar protección del aro.
+<img width="613" height="470" alt="image" src="https://github.com/user-attachments/assets/a631dd06-be7f-4c33-ae20-9bd856acf833" />
 
-game
 
-team
+📌 Agilidad vs Robos
 
-Se realizaron:
+Hipótesis: mayor movilidad lateral debería favorecer recuperación defensiva.
+<img width="614" height="470" alt="image" src="https://github.com/user-attachments/assets/9d7a3a09-8bcc-4db9-b7bc-3783f8ea4b58" />
 
-Conversión de altura a centímetros.
 
-Conversión de peso a kilogramos.
+📌 Salto Vertical vs Plus/Minus
 
-Unificación de claves.
+Hipótesis: mayor explosividad debería generar mayor impacto competitivo.
+<img width="612" height="470" alt="image" src="https://github.com/user-attachments/assets/2b246cd4-1fa3-4324-a907-34a7852da8fa" />
 
-Limpieza de tipos numéricos.
+📌 Altura vs Puntos
 
-Eliminación de inconsistencias estructurales.
+Hipótesis: equipos más altos podrían dominar el juego interior.
+<img width="618" height="470" alt="image" src="https://github.com/user-attachments/assets/be7719b8-db14-4137-9392-7f23e154e44d" />
 
-Se construyó un dataset agregado a nivel equipo histórico, promediando:
+📌 Índice Físico Global vs Plus/Minus
 
-Variables físicas promedio:
+Hipótesis: un mejor perfil físico agregado debería reflejarse en mejor desempeño colectivo.
+<img width="612" height="470" alt="image" src="https://github.com/user-attachments/assets/faab30a0-58f5-41a5-938f-d8b59f982024" />
 
-Envergadura
 
-Salto vertical
+Además, se analizaron relaciones individuales por posición para validar coherencia estructural del dataset.
 
-Agilidad
+# 4️⃣ Hallazgos Principales
+🔎 1. Coherencia Interna del Perfil Físico
 
-Altura
+Las métricas físicas mostraron alta correlación entre sí:
 
-Peso
+Altura ↔ Envergadura
 
-Variables de rendimiento promedio:
+Altura ↔ Peso
 
-Puntos
+Peso ↔ Envergadura
 
-Tapones
+Esto confirma consistencia estructural del dataset y valida la calidad de los datos.
 
-Robos
+🔎 2. Envergadura no predice Tapones a nivel equipo
 
-Plus/Minus
+La relación entre wingspan promedio y bloqueos fue prácticamente nula.
 
-El dataset final quedó compuesto por:
+Esto sugiere que la defensa del aro depende más de:
 
-30 equipos × 10 métricas agregadas
+Sistema defensivo
 
-# 3️⃣ Análisis Exploratorio de Datos (EDA)
+Posicionamiento
 
-Se aplicaron:
+Timing
 
-Estadística descriptiva
+Rol táctico
 
-Matriz de correlación de Pearson
+Y no del tamaño promedio del roster.
 
-Heatmaps
+🔎 3. Agilidad no explica generación de robos
 
-Gráficos de dispersión con regresión
+La comparación entre tiempo de agilidad y robos mostró una tendencia muy débil.
 
-Análisis individual por posición
+Esto indica que la defensa perimetral efectiva no depende exclusivamente de la movilidad física promedio.
 
-# 4️⃣ Insights Principales 
-🔹 1. Coherencia Física Interna
+🔎 4. Explosividad tiene impacto limitado
 
-Las variables físicas (altura, peso, envergadura) presentan fuerte correlación entre sí, validando consistencia estructural del dataset.
+El salto vertical mostró apenas una leve relación positiva con plus/minus, pero con alta dispersión.
 
-🔹 2. Bajo Impacto del Físico Promedio en el Rendimiento Colectivo
+La explosividad promedio no garantiza impacto competitivo.
 
-No se encontraron correlaciones significativas entre el perfil físico promedio del equipo y su desempeño competitivo (puntos, tapones, diferencial). El físico agregado pierde poder explicativo.
+🔎 5. Altura promedio no mejora producción ofensiva
 
-🔹 3. El Rendimiento Depende Más del Juego que del Tamaño
+Se observó incluso una leve tendencia negativa entre altura promedio y puntos.
 
-Las métricas de rendimiento están más correlacionadas entre sí (puntos ↔ plus/minus ↔ robos) que con variables físicas.
+Esto sugiere que el juego moderno prioriza:
 
-🔹 4. Diferencias Físicas Claras por Posición
+Espaciado
 
-A nivel individual se observan patrones coherentes:
+Tiro exterior
+
+Velocidad
+
+Versatilidad
+
+Por encima del tamaño estructural.
+
+🔎 6. Índice Físico Global vs Impacto Competitivo
+
+Al combinar todas las métricas físicas en un índice agregado, la relación con plus/minus fue prácticamente plana.
+
+Conclusión:
+
+El perfil físico promedio de un equipo no emerge como predictor significativo del rendimiento colectivo.
+
+# 5️⃣ Análisis Individual por Posición
+
+A nivel individual sí se observaron patrones coherentes:
 
 Centers más altos y pesados.
 
@@ -335,29 +357,37 @@ Guards más explosivos.
 
 Relación fuerte entre altura y envergadura.
 
-Relación positiva entre peso y fuerza.
+Relación positiva entre peso y fuerza (bench press).
 
-No existe relación clara entre altura y salto vertical.
+Ausencia de relación clara entre altura y salto vertical.
 
-🔹 5. El Talento Físico No Garantiza Impacto Competitivo
+Esto confirma que el dataset captura correctamente la estructura física por rol, aunque esa estructura no se traduce linealmente en éxito colectivo.
 
-Incluso un índice físico agregado mostró correlación prácticamente nula con el plus/minus promedio del equipo.
+# 6️⃣ Insight General del Sprint
 
-# 5️⃣  Conclusión General del Sprint #2
+El análisis revela que:
 
-El análisis sugiere que:
+Las métricas físicas son coherentes estructuralmente.
 
-Las métricas físicas individuales son coherentes y estructuralmente válidas, pero no emergen como predictores determinantes del éxito colectivo cuando se analizan a nivel equipo agregado.
+No existe correlación fuerte entre perfil físico promedio y rendimiento de equipo.
 
-El rendimiento competitivo parece depender más de:
+El éxito competitivo está más asociado a métricas de juego que a atributos físicos agregados.
 
-Producción ofensiva
+El impacto físico parece diluirse cuando se analiza a nivel colectivo.
 
-Dinámica táctica
+# 7️⃣ Conclusión Estratégica
 
-Eficiencia de juego
+El talento físico individual es necesario para competir, pero no suficiente para explicar el éxito colectivo.
 
-Interacción colectiva
+El rendimiento parece depender más de:
+
+Sistema táctico
+
+Eficiencia ofensiva
+
+Dinámica defensiva
+
+Sinergia de equipo
 
 ## 👥 Equipo
 - Candela Paula Antognoli - Data Analyst
