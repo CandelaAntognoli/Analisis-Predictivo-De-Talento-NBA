@@ -389,6 +389,36 @@ Dinámica defensiva
 
 Sinergia de equipo
 
+📊 Visualización y Dashboard (Power BI)
+Esta sección del proyecto traduce los hallazgos de Python a una herramienta interactiva de toma de decisiones para scouting y análisis de tendencias.
+
+1. Evolución del Juego: El Giro hacia la Explosividad
+
+
+Métricas: Max Vertical Leap vs. to_year (2018-2023).
+
+Análisis: El gráfico muestra una tendencia ascendente en la sumatoria del salto vertical en el último lustro.
+
+Insight: Esta pendiente positiva valida la transición de la NBA hacia un modelo de juego basado en la versatilidad atlética y la velocidad de transición, priorizando jugadores capaces de cubrir más terreno en menos tiempo.
+
+2. Anatomía del Atleta: Biometría y Correlación
+
+
+Métricas: Height w/ Shoes (Altura) vs. Weight (Peso).
+
+Análisis de Posición: Al filtrar por la posición de Center, se observa un desplazamiento hacia perfiles más estilizados (menor peso relativo).
+
+Insight: Los datos confirman el fin del "pívot pesado" tradicional. El scouting moderno busca un índice de masa corporal (IMC) más eficiente que permita defender múltiples posiciones sin perder la ventaja de la altura.
+
+3. Correlación de Envergadura (Wingspan vs. Standing Reach)
+
+
+Métricas: Wingspan vs. Standing Reach.
+
+Análisis: Existe una correlación lineal casi perfecta (R2 ≈1). Al segmentar por posiciones, los Centers se agrupan en los extremos de la diagonal.
+
+Insight: Esta visualización permite identificar a los "Unicornios": jugadores que se salen de la norma estadística por tener una envergadura desproporcionada para su altura, factor clave para la protección del aro.
+
 ## 👥 Equipo
 - Candela Paula Antognoli - Data Analyst
 - Faber Garcia - Data Analyst
