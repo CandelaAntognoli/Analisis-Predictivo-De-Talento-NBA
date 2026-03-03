@@ -1,0 +1,66 @@
+🏀 Informe Técnico: Del Dato al Scouting Estratégico (NBA Analysis)
+
+1. Fase de Ingeniería y Procesamiento (Google Colab / Python)
+El proyecto inició con un proceso de ETL (Extract, Transform, Load) robusto para garantizar la integridad de las conclusiones.
+
+🛠️ Preprocesamiento de Datos
+
+Ingesta: Limpieza de un dataset crudo de la NBA con más de 4,000 registros históricos.
+
+Limpieza de Ruido: Se trataron valores nulos en métricas críticas (Max Vertical Leap, Wingspan).
+
+Creación de Variables de Control:
+
+games_played_current_season_flag: Implementada para segregar a los jugadores activos de los históricos, permitiendo un análisis de "Estado Actual de la Liga".
+
+Normalización de Fechas: Transformación de tipos de datos para asegurar que las jerarquías de tiempo funcionaran correctamente en la fase de BI.
+
+
+🧪 Análisis Exploratorio (EDA)
+
+En Colab, se validaron las primeras hipótesis mediante correlaciones de Pearson, descubriendo que la Envergadura y el Alcance tienen una relación de R2≈0.98, lo que sentó las bases para el gráfico de "Anatomía del Atleta".
+
+
+2. Modelado y Business Intelligence (Power BI)
+Tras la limpieza, los datos se exportaron a Power BI para crear un entorno de análisis dinámico centrado en la toma de decisiones.
+
+📉 Evolución del Juego: La Revolución del Salto (2018-2022)
+
+Configuración: Se utilizó un eje X jerárquico (to_year > Season) para garantizar una línea de tiempo continua.
+
+Hallazgo Crítico: Al filtrar por el periodo 2018-2022 y segmentar por la posición de Center, el Promedio de Max Vertical Leap muestra una pendiente ascendente. Este descubrimiento es clave: sin el filtrado por to_year, la evolución real se diluía en el promedio histórico.
+
+Interpretación Técnica: Existe una mutación en el perfil del jugador interior. La liga está seleccionando pívots que, aunque más ligeros, poseen un techo atlético superior, validando la transición hacia un modelo de protección del aro móvil y transiciones ultra-rápidas.
+
+🧬 Anatomía del Atleta: Biometría vs. Posición
+
+Visualización: Gráfico de Dispersión (Scatter Plot) de Altura con Calzado vs. Peso.
+
+Comportamiento del Dato: Al segmentar por Centers, se observa un desplazamiento hacia el cuadrante inferior izquierdo.
+
+Conclusión: El "Pívot Pesado" ha sido superado estadísticamente. El scouting moderno prioriza la agilidad lateral y el IMC eficiente, permitiendo que los interiores no solo defiendan la pintura, sino que sean capaces de realizar cambios defensivos en el perímetro.
+
+📏 Correlación de Longitud (Wingspan vs. Reach)
+
+Visualización: Gráfico de dispersión con línea de tendencia diagonal clara.
+
+Insight de Scouting: Esta visualización permite identificar a los "Unicornios". Los jugadores que se ubican por encima de la diagonal poseen una envergadura desproporcionada para su alcance de pie, lo que los convierte en activos defensivos de élite con una "zona de influencia" mayor a la esperada por su altura.
+
+
+3. Arquitectura Tecnológica
+Entorno de Desarrollo: Google Colab (Python 3.x).
+
+Librerías Clave: Pandas (ETL), Matplotlib/Seaborn (Validación estadística).
+
+Herramienta de BI: Power BI Desktop.
+
+Lógica de Negocio: DAX para medidas dinámicas y jerarquías temporales avanzadas.
+
+4. Conclusiones Generales del Proyecto
+Este ecosistema de datos demuestra que la NBA ha pasado de ser una liga de posiciones estáticas a una de capacidades dinámicas.
+
+La altura ya no es suficiente: La envergadura y la explosividad vertical son los nuevos KPIs de éxito para el impacto defensivo.
+
+Evolución del Pívot: Entre 2018 y 2022, la posición de Center se ha vuelto un 12% más explosiva en términos de promedio de salto, a pesar de la reducción general de peso en la posición.
+
+Decisión de Negocio: El dashboard permite a un General Manager o Scout filtrar prospectos basándose en eficiencia física funcional, asegurando que las nuevas contrataciones encajen en el método de juego de alta intensidad de la liga actual.
